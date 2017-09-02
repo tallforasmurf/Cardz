@@ -264,16 +264,6 @@ class Pile() :
 
     Properties:
 
-    receive() accepts a Card which goes on top of the Pile
-
-    receive_pile() accepts another Pile, removes all cards from it and
-    stacks them on this Pile.
-
-    remove() returns the Card from the top of the Pile and removes it.
-
-    remove_pile( n ) removes n cards from the top of the Pile and returns
-        a new Pile containing those cards.
-
     __len__(): int, the number of cards in the Pile
 
     A Pile supports indexing:
@@ -290,6 +280,20 @@ class Pile() :
     with the returned Cards other than test or display them (for example if you
     put them back in a deck or in another Pile) you risk raising errors later.
 
+    sort( reverse=False ): sorts the cards in the pile into ascending
+        or descending (reverse==True) order, by rank within suit.
+        returns the number of cards in the pile.
+
+    receive() accepts a Card which goes on top of the Pile
+
+    receive_pile() accepts another Pile, removes all cards from it and
+    stacks them on this Pile.
+
+    remove() returns the Card from the top of the Pile and removes it.
+
+    remove_pile( n ) removes n cards from the top of the Pile and returns
+        a new Pile containing those cards.
+
     The Pile does not support comparison. It does support default hashing
     so you can have a dictionary or set of Piles.
 
@@ -299,11 +303,15 @@ class Pile() :
         self._cards = [] # Type: List( Card )
 
     def __len__( self ) -> int :
-        return len(self._cards)
+        return len( self._cards )
 
     def __getitem__( self, key ) :
         ''' implement indexing '''
         return self._cards.__getitem__( key )
+
+    def sort( self, reverse:bool = False ) -> int :
+        self._cards.sort( key = Card.position, reverse=reverse )
+        return len( self._cards )
 
     def receive( self, card: Card ) -> int :
         ''' add a Card to this Pile
@@ -316,13 +324,15 @@ class Pile() :
         Raises:
             ValueError when card isn't one
             PilingError when card is already in Pile
+        Note that "card in self._cards" uses the __eq__ method of Card,
+        which only compares card-rank. We need to compare positions.
         '''
         if isinstance( card, Card ) :
-            if not card in self._cards :
-                self._cards.insert( 0, card )
-                return len( self._cards )
-            else :
-                raise PilingError( "Card already in Pile" )
+            for c in self._cards :
+                if c.position() == card.position() :
+                    raise PilingError( "Card already in Pile" )
+            self._cards.insert( 0, card )
+            return len( self._cards )
         else :
             raise ValueError
 
@@ -829,3 +839,22 @@ if __name__ == '__main__' :
     assert 12 == P0[0].position() # top card is former top card
     assert 7 == P0[5].position()
     assert 0 == P0[12].position()
+
+    def dump_pile( p:Pile ) :
+        for c in p :
+            print( c, end=' ' )
+        print()
+
+    D2 = Deck()
+    D2.shuffle( times=5 )
+    P2 = Pile()
+    for j in range(13) : P2.receive( D2.deal() )
+    #dump_pile(P2)
+    P2.sort()
+    #dump_pile(P2)
+    for j in range(1,13) :
+        assert P2[j].position() > P2[j-1].position()
+    P2.sort( reverse=True )
+    #dump_pile(P2)
+    for j in range(1,13) :
+        assert P2[j].position() < P2[j-1].position()
