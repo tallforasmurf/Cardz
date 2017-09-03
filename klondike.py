@@ -39,4 +39,50 @@ http://creativecommons.org/licenses/by-nc-sa/4.0/.
 '''
 
 from suit_card_deck import *
+from typing import List
 
+ACES = [] # type: List[Pile]
+
+TABLEAU = [] # type: List[Pile]
+
+DECK = Deck() # type: Deck
+
+PACK = Pile() # type: Pile
+
+def new_game():
+    global ACES, TABLEAU, DECK, PACK
+
+    ACES = [ Pile(), Pile(), Pile(), Pile() ]
+    TABLEAU = [ Pile(), Pile(), Pile(), Pile(), Pile(), Pile(), Pile() ]
+    DECK = Deck()
+    PACK = Pile()
+
+    DECK.shuffle( times=5 )
+
+    for j in range(7) :
+        for p in range( j, 7 ) :
+            TABLEAU[ p ].receive( DECK.deal() )
+
+KEEP_ON = True # type: bool
+
+def ask_another() :
+    '''
+    prompt user if another game is wanted, return True if so,
+    False if not.
+    '''
+    print()
+    try:
+
+        ans = input('\t Another game? [Yn] ' )
+        if not len( ans ) :
+            ans = 'y'
+        return ans.lower()[0] == 'y'
+
+    except EOFError as e :
+        return False
+
+while KEEP_ON :
+
+    print('picture a game here')
+
+    KEEP_ON = ask_another()
