@@ -5,7 +5,12 @@ Note that the code herein has a dependency on the assumption that a "deck of
 cards" contains 52 cards in four suits. It does not support jokers or decks
 with other than the conventional 52 cards.
 
-TODO: LICENSE INFORMATION
+            LICENSE INFORMATION
+
+This work is licensed under the Creative Commons
+Attribution-NonCommercial-ShareAlike 4.0 International License. To view a
+copy of this license, visit
+http://creativecommons.org/licenses/by-nc-sa/4.0/.
 
 '''
 
