@@ -50,6 +50,10 @@ DECK = Deck() # type: Deck
 PACK = Pile() # type: Pile
 
 def new_game():
+    '''
+    Initialize game apparatus: create fresh copies of the ace piles,
+    the seven tableau piles, the deck and the pack. Shuffle and deal.
+    '''
     global ACES, TABLEAU, DECK, PACK
 
     ACES = [ Pile(), Pile(), Pile(), Pile() ]
@@ -79,6 +83,7 @@ def ask_another() :
         return ans.lower()[0] == 'y'
 
     except EOFError as e :
+        print() # force a newline on ^D
         return False
 
 while KEEP_ON :
