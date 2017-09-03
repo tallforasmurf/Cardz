@@ -85,9 +85,29 @@ def ask_another() :
     except EOFError as e :
         print() # force a newline on ^D
         return False
+    except KeyboardInterrupt as k :
+        print() # force a newline on ^C/Delete
+        return False
+
+def display_tableau() :
+    '''
+    Display the current state of the game, as described in prologue above
+    '''
+    pass
+
+def get_command() :
+    '''
+    Prompt the user for a move command, ensure it is two characters for
+    source-target, and return it.
+
+    If the command (after stripping) is null, return NN
+    If the user hits ^D or ^C, return XX
+    '''
+    pass
+
 
 while KEEP_ON :
 
-    print('picture a game here')
+
 
     KEEP_ON = ask_another()
