@@ -282,7 +282,12 @@ class Pile() :
 
     sort( reverse=False ): sorts the cards in the pile into ascending
         or descending (reverse==True) order, by rank within suit.
-        returns the number of cards in the pile.
+        Returns the number of cards in the pile.
+
+    turn_over() : inverts the pile. Lets you correct for the fact that when
+        you deal one card at a time to a pile, the cards are inverted
+        from their deck sequence.
+        Returns the number of cards in the pile.
 
     receive() accepts a Card which goes on top of the Pile
 
@@ -311,6 +316,10 @@ class Pile() :
 
     def sort( self, reverse:bool = False ) -> int :
         self._cards.sort( key = Card.position, reverse=reverse )
+        return len( self._cards )
+
+    def turn_over( self ) :
+        self._cards = list( reversed( self._cards ) )
         return len( self._cards )
 
     def receive( self, card: Card ) -> int :
@@ -858,3 +867,7 @@ if __name__ == '__main__' :
     #dump_pile(P2)
     for j in range(1,13) :
         assert P2[j].position() < P2[j-1].position()
+    P2.turn_over()
+    #dump_pile(P2)
+    for j in range(1,13) :
+        assert P2[j].position() > P2[j-1].position()
