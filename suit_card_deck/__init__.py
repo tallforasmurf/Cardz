@@ -21,7 +21,7 @@ The __all__ global defines the set of names that are returned by
 from suit_card_deck import *
 
 '''
-__all__ = [ 'Suit', 'Card', 'Rank', 'Pile', 'Hand',
+__all__ = [ 'Suit', 'Card', 'Rank', 'Deck', 'Pile', 'Hand',
            'CLUB', 'DIAMOND', 'HEART', 'SPADE',
            'EmptyDeckError',
            'MismatchedDeckError', 'PilingError' ]
