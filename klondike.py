@@ -10,8 +10,6 @@ pack(21) ♣4
  ♣  ♦  ♥  ♠  1(1)  2(2)  3(3)  4(4)  5(5)  6(6)  7(7)
  -  -  -  -   ♠6    ♥J    ♥K    ♣T    ♥5    ♦J    ♣A
 
- >>
-
 and awaits an order of the form: source target
 and the sources and targets are:
 
@@ -29,6 +27,9 @@ If the deck has been completely turned over, return means,
 invert it and turn it.
 
 Exercises the suit_card_deck module.
+
+Not bad: a complete klondike in under 300 lines. Of course it is
+eyeball-bleeding hard to play, but...
 
     LICENSE
 
@@ -74,7 +75,7 @@ KEEP_ON = True # type: bool
 def ask_another() -> str :
     '''
     prompt user if another game is wanted, return True if so,
-    False if not.
+    False if not. Take ^c, ^d as a "no".
     '''
     print()
     try:
@@ -149,12 +150,15 @@ def get_command() -> str :
 
     If the command (after stripping) is null, return NN
     If the user hits ^D or ^C, return XX
+
+    Allow manual "q" response because ^d doesn't work in Wing i/o window.
     '''
     sources = '1234567P'
     destinations = '1234567CDHS'
     while True :
         try:
             input_text = input( "source, target: " )
+            if input_text.upper() == "q" : raise EOFError
         except EOFError as e :
             print() # force a newline on ^D
             return 'XX'
