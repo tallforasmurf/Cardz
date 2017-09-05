@@ -130,7 +130,7 @@ def display_tableau() :
 
     # second line, part deux: print the 7 tableau piles sizes, and return
     for p in range(6) :
-        print( name_count( str(p), TABLEAU[p] ), end='  ' )
+        print( name_count( str(p+1), TABLEAU[p] ), end='  ' )
     print( name_count( '7', TABLEAU[6] ) )
 
     # third line, part 1: print name of top card in each ace-pile
@@ -181,6 +181,74 @@ def get_command() -> str :
     # end input loop
     return command
 
+def perform( command: str ) :
+    global ACES, TABLEAU, DECK, PACK
+
+    '''
+    Carry out the user's wishes based on the two letters received.
+    '''
+    if command == 'NN' :
+        # NN: turn the deck. If no cards remain in the deck, return the pack
+        # to the deck. Deal three cards (if available) from the deck onto the
+        # pack.
+        if 0 == len( DECK ) :
+            if len( PACK ) :
+                PACK.turn_over()
+                DECK.put_back_pile( PACK ) # empties PACK
+            else:
+                print( "no cards remain" )
+            return
+        for k in range( min( 3, len( DECK ) ) ) :
+            PACK.receive( DECK.deal() )
+        return
+    # command is SD, move card from source to dest.
+    source_letter = command[0]
+    dest_letter = command[1]
+    if source_letter == 'P' :
+        source_pile = PACK
+    else : # source is 1..7
+        source_pile = TABLEAU[ int( source_letter ) - 1 ]
+
+    # any source might be empty; diagnose
+    if 0 == len( source_pile ) :
+        print('No cards in pile {}'.format( source_letter ) )
+        return
+
+    # source is ok, choose destination and validate move
+    source_card = source_pile[0]
+    if dest_letter in 'CDHS' :
+        suit_rank = 'CDHS'.index( dest_letter )
+        dest_pile = ACES[ suit_rank ]
+        if source_card.suit_rank() == suit_rank and \
+            (
+                ( source_card.rank() == Rank.rA and 0 == len( dest_pile ) )
+            or
+                ( source_card.position() == ( dest_pile[0].position()+1 ) )
+            or
+                ( source_card.rank() == Rank.r2 and dest_pile[0].rank() == Rank.rA )
+            ) :
+            dest_pile.receive( source_pile.remove() )
+        else:
+            print( "invalid move: {} to {}".format( str(source_card), dest_letter ) )
+    else :
+        dest_pile = TABLEAU[ int( dest_letter ) - 1 ]
+        source_color = source_card.suit().color()
+        source_rank = source_card.rank()
+        if ( \
+            (
+                0 == len(dest_pile)
+                and source_card.rank() == Rank.rK
+            )
+            or
+            (
+                source_color != dest_pile[0].suit().color()
+                and dest_pile[0].rank() == (source_rank + 1)
+            )
+           ) :
+            dest_pile.receive( source_pile.remove() )
+        else :
+            print( "invalid move: {} to {}".format( str(source_card), dest_letter ) )
+
 while KEEP_ON :
 
     new_game()
@@ -191,9 +259,6 @@ while KEEP_ON :
         if command == 'XX' :
             # user hit ^C
             break
-        print( command )
-
-    if command == 'XX' :
-        break
+        perform( command )
 
     KEEP_ON = ask_another()
