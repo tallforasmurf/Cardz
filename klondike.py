@@ -1,35 +1,34 @@
 '''
 
-Simple emulation of the solitaire game "Klondike by Threes"
+Simple emulation of the solitaire game "Klondike by Threes" to exercise the
+suit_card_deck module.
 
-PTUI (plain terminal user interface)
+
+PTUI (plain terminal user interface) (TODO: rewrite for curses)
 
 On each turn displays the layout as (for example)
 
-pack(21) ♣4
- ♣  ♦  ♥  ♠  1(1)  2(2)  3(3)  4(4)  5(5)  6(6)  7(7)
- -  -  -  -   ♠6    ♥J    ♥K    ♣T    ♥5    ♦J    ♣A
+pack(21) ♦3
+ ♣  ♦  ♥  ♠  (1) (2) (3) (4) (5) (6) (7)
+ A  -  -  -   ♣K  ♦7  --  --  --  --  --
+              ♦Q      --  --  --  --  --
+                      ♥7  --  --  --  --
+                      ♠6  ♥6  ♥K  ♦5  --
+                          ♣5  ♠Q  ♣4  --
+                          ♦4  ♦J      ♥J
+                          ♣3  ♠T
 
 and awaits an order of the form: source target
-and the sources and targets are:
+The sources are:
+    P, the pack, and 1, 2, 3, 4, 5, 6, 7, the piles in the tableau
+The targets are:
+    C, D, H, S: the ace-piles by suit, and the tableau 1..7.
 
-1, 2, 3, 4, 5, 6, 7: the piles in the tableau
-C, D, H, S: the ace-piles by suit
-P the pack
+In the above tableau (from an actual game) the only valid orders are
+p6 (♦3 from pack to ♣4) and 62 (♦5/♣4 from pile 6 to ♦7 on pile 2)
 
-As above, valid orders might be:
-  P5 (top of pack, club 4, to pile 5, on the heart 5)
-  42 (top of pile 4, club ten, onto pile 2, the heart jack)
-  7C (top of pile 7, club Ace, to the Club ace pile)
-
-A null order (return only) means, turn up the next card.
-If the deck has been completely turned over, return means,
-invert it and turn it.
-
-Exercises the suit_card_deck module.
-
-Not bad: a complete klondike in under 300 lines. Of course it is
-eyeball-bleeding hard to play, but...
+A null order (return only) means, turn up the next card. If the deck has been
+completely turned over, return means, invert it and turn it.
 
     LICENSE
 
