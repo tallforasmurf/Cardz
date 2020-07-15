@@ -1,5 +1,7 @@
+#!/usr/bin/python
+# -*- coding: UTF8 -*-
 '''
-Module suit_card_deck defines classes for Suit, Card, Deck, and Pile objects.
+Module suit_card_deck defines classes for Suit, Card, Deck, and Pile classes.
 
 Note that the code herein has a dependency on the assumption that a "deck of
 cards" contains 52 cards in four suits. It does not support jokers or decks
@@ -60,22 +62,24 @@ class Suit():
 
     One object of each suit is instantiated as a global name below,
     and these specific objects are incorporated by all objects of
-    the Card class. Thus the suit of a diamond card "is" DIAMOND
-    as well as being equal-to DIAMOND and to Suit(1).
+    the Card class. Thus the following expressions are equally valid:
+        a_card.suit() is DIAMOND
+        a_card.suit() == DIAMOND
+        a_card.suit() == Suit(1)
 
-    Properties: are all implemented as methods, not attributes.
+    Properties are all implemented as methods, not attributes.
 
-    color(): string, "black" or "red"
+    color() -> string "black" or "red"
 
-    name(): string, "Club", "Diamond", "Heart" or "Spade"
+    name() -> string "Club", "Diamond", "Heart" or "Spade"
 
-    plural(): string, the value of name() + "s"
+    plural() -> string "Clubs", "Diamonds", "Hearts" or "Spades"
 
-    initial(): string, "C" "D" "H" or "S"
+    initial() -> string "C" "D" "H" or "S"
 
-    rank(): integer, 0 (Club) to 3 (Spade)
+    rank() -> integer, 0 (Club) to 3 (Spade)
 
-    image(): one-character string, a unicode symbol ♠ ♣ ♥ ♦ (&spades;&clubs;&hearts;&diams;)
+    image() -> one-character unicode string ♠ ♣ ♥ ♦ (&spades;&clubs;&hearts;&diams;)
 
     '''
 
@@ -115,7 +119,7 @@ class Suit():
 
 
 '''
-The four Suits, defined here as constants, for comparison elsewhere.
+The four Suits, defined here as constants, for comparison anywhere.
 '''
 
 CLUB = Suit(0)
@@ -126,7 +130,8 @@ SPADE = Suit(3)
 class Rank(IntEnum):
 
     '''
-    An intenum representing the relative rank of a Card
+    An intenum representing the relative rank of a Card.
+    Reference as Rank.xx e.g. card.rank() < Rank.rA
     '''
 
     r2 = 2 ; r3 = 3 ; r4 = 4 ; r5 = 5;
@@ -144,15 +149,18 @@ class Card():
 
     Properties: (all implemented as methods not attributes)
 
-    suit(): class Suit, "is" one of CLUB, DIAMOND, HEART or SPADE
+    suit() -> class Suit, "is" one of CLUB, DIAMOND, HEART or SPADE
 
-    suit_rank(): int from suit.rank(), the rank of its suit
+    suit_rank() -> int from suit.rank(), the rank of its suit
 
-    rank(): IntEnum of 2, 3, ... 14
+    rank() -> IntEnum in Rank, one of 2, 3, ... 14
 
-    count(): int, 2-10 or 11 for Ace
+    point_count() -> int, 2-9, 10 for face cards, 11 for Ace
 
-    name(): one-letter string, '2' ... '9', 'T', 'J', 'Q', 'K', 'A'
+    honor() -> bool, count()>9
+    honour() ditto, for brits
+
+    name() -> one-letter string, '2' ... '9', 'T', 'J', 'Q', 'K', 'A'
 
     position(): int from 0..51, the raw standing of this card in an
         unshuffled deck of 52, from which suit, rank etc are derived
@@ -166,20 +174,21 @@ class Card():
 
     The Card class implements the comparison operators based on the card Rank;
     thus two 9's are equal, Ace > Jack, etc. Because Rank is an IntEnum
-    it is legal also to compare a Card to an int in the range 2..14.
+    it is legal also to compare a rank() to an int in the range 2..14.
 
     If you want the Suit to figure in the comparison of two Cards (as in
     Bridge or Hearts), the suit must be tested separately.
 
     Card objects are hashable, so can be used as keys in a set or dict. The
     hash value is the card's position in an unshuffled deck, e.g. 13 for the
-    deuce of diamonds, modified by the Card's Deck. So a set can contain
-    multiple Cards of the same Suit and Rank but from different Decks; but a
-    set will only contain one instance of a given card from a given Deck.
+    deuce of diamonds, modified by the Card's Deck. So a set of cards can
+    contain multiple Cards of the same Suit and Rank but from different
+    Decks; but a set will only contain one instance of a given card from a
+    given Deck.
 
     '''
 
-    Suits = ( CLUB, DIAMOND, HEART, SPADE )
+    Suits = ( CLUB, DIAMOND, HEART, SPADE ) # references globals above
     Points = ( 2,3,4,5,6,7,8,9,10,10,10,10,11 )
     Names = ( '2', '3', '4', '5', '6', '7', '8',
               '9', 'T', 'J', 'Q', 'K', 'A' )
@@ -187,22 +196,28 @@ class Card():
     #__slots__ = ['_r', '_p', '_deck' ]
 
     def __init__( self, position, deck = None ) :
-        assert 0 <= position and position <= 51
+        assert 0 <= position <= 51
         self._pos = position
         self._r, self._p = divmod( position, 13 )
         self._deck = deck
 
-    def suit_rank( self ) -> int :
-        return Card.Suits[ self._r ].rank()
-
     def suit( self ) -> Suit :
         return Card.Suits[ self._r ]
+
+    def suit_rank( self ) -> int :
+        return Card.Suits[ self._r ].rank()
 
     def rank( self ) -> Rank :
         return Rank( 2+self._p )
 
     def point_count( self ) -> int :
         return Card.Points[ self._p ]
+
+    def honor( self ) -> bool :
+        return self.point_count() > 9
+
+    def honour( self ) -> bool :
+        return self.honor()
 
     def name( self ) -> str :
         return Card.Names[ self._p ]
@@ -222,7 +237,7 @@ class Card():
         elif isinstance( other, int) and 1 < other < 15 :
             return self.rank() < Rank( other )
         else :
-            return NotImplemented
+            raise ValueError("Cannot compare Card and non-Card")
 
     def __eq__( self, other ) -> bool :
         if isinstance( other, Card ) :
@@ -230,7 +245,7 @@ class Card():
         elif isinstance( other, int) and 1 < other < 15 :
             return self.rank() == Rank( other )
         else :
-            return NotImplemented
+            raise ValueError("Cannot compare Card and non-Card")
 
     def __gt__( self, other ) -> bool :
         if isinstance( other, Card ) :
@@ -238,7 +253,7 @@ class Card():
         elif isinstance( other, int) and 1 < other < 15 :
             return self.rank() > Rank( other )
         else :
-            return NotImplemented
+            raise ValueError("Cannot compare Card and non-Card")
 
     def __le__( self, other ) -> bool :
         return self.__lt__( other ) or self.__eq__( other )
@@ -253,61 +268,78 @@ class Card():
         return self._pos +id(self._deck)
 
 class Pile() :
-
     '''
-    The class of a set of 0 or more cards that have been dealt from a single Deck.
+    The class of a set of 0 or more cards deposited in some order.
 
-    A Pile can be used as a "hand" or as a discard heap, or as one element
+    A Pile could represent a "hand" or a discard heap, or be one element
     of a solitaire tableau.
 
     A Pile does **NOT** enforce the rule that its cards should all be from a
     single Deck. Thus you could in principle pile up Cards from different Decks,
     and if you did that, you might find duplicate Card values in a Pile.
 
-    when a Pile is returned to a Deck, the Deck enforces the rule that every Card
+    When a Pile is returned to a Deck, the Deck enforces the rule that every Card
     must have come from that Deck.
 
     Properties:
 
-    __len__(): int, the number of cards in the Pile
+    __len__() -> int, the number of cards in the Pile
 
     A Pile supports indexing:
 
         apile[n] returns the Nth Card in the Pile
 
-        apile[x:y] returns a list of Cards
+        apile[x:y] returns a list of Cards from apile[x] through apile[y-1]
 
-    Indexing a Pile makes it easy to access the top Card in a Pile to display
-    it or test its value; or to display all the cards in the Pile (for C in
-    apile[:]) and so on.
+    Indexing a Pile makes it easy to access the top (apile[0]) or bottom
+    (apile[-1]) Card to display it or test its value; or to display all the
+    cards in the Pile (for C in apile[:]) and so on.
 
     Note that indexing does not remove cards from the Pile, so if you do anything
     with the returned Cards other than test or display them (for example if you
     put them back in a deck or in another Pile) you risk raising errors later.
 
-    sort( reverse=False ): sorts the cards in the pile into ascending
-        or descending (reverse==True) order, by rank within suit.
-        Returns the number of cards in the pile.
+    sort( reverse=False ) -> int
 
-    turn_over() : inverts the pile. Lets you correct for the fact that when
-        you deal one card at a time to a pile, the cards are inverted
-        from their deck sequence.
-        Returns the number of cards in the pile.
+        Sorts the cards in the pile into ascending or descending
+        (reverse==True) order, by rank within suit. This is a change in the
+        state of the pile, assuming it was initially dealt at random. Use it
+        to, for example, arrange a hand for display. Returns the number of
+        cards in the pile.
 
-    receive() accepts a Card which goes on top of the Pile
+    turn_over() -> int
 
-    receive_pile() accepts another Pile, removes all cards from it and
-    stacks them on this Pile.
+        Inverts the pile. Lets you correct for the fact that when you deal
+        one card at a time to a pile, the cards are inverted from their deck
+        sequence. Returns the number of cards in the pile.
 
-    remove() returns the Card from the top of the Pile and removes it.
+    receive() -> int
 
-    remove_pile( n ) removes n cards from the top of the Pile and returns
-        a new Pile containing those cards.
+        Accepts a Card which goes on top of the Pile. Returns number of cards
+        in the pile.
+
+    receive_pile() -> int
+
+        Accepts another Pile, removes all cards from it and stacks them on this
+        Pile. Returns number of cards in the pile.
+
+    remove() -> Card
+
+        Returns the Card from the top of the Pile and removes it. If the pile
+        is empty, raises PilingError.
+
+    remove_pile( n ) _> Pile
+
+        Removes n cards from the top of the Pile and returns a new Pile
+        containing those cards. If there are not n cards in the pile, raises
+        PilingError.
 
     The Pile does not support comparison. It does support default hashing
     so you can have a dictionary or set of Piles.
 
     '''
+
+    __slots__ = ( "_cards" )
 
     def __init__( self ) :
         self._cards = [] # Type: List( Card )
@@ -338,8 +370,10 @@ class Pile() :
         Raises:
             ValueError when card isn't one
             PilingError when card is already in Pile
-        Note that "card in self._cards" uses the __eq__ method of Card,
-        which only compares card-rank. We need to compare positions.
+
+        Note that the simple test, "card in self._cards" uses the __eq__
+        method of Card, which only compares card-rank. We need to compare
+        positions.
         '''
         if isinstance( card, Card ) :
             for c in self._cards :
@@ -348,7 +382,7 @@ class Pile() :
             self._cards.insert( 0, card )
             return len( self._cards )
         else :
-            raise ValueError
+            raise ValueError("Pile can only receive a Card object")
 
     def receive_pile ( self, pile ) -> int :
         ''' add a Pile to this Pile.
@@ -356,10 +390,9 @@ class Pile() :
         Note we can't type-check the argument "pile:Pile" because the
         name Pile has not been defined yet -- we are inside its def.
 
-        Note we can't loop using self.receive( pile.remove() ) because
+        Note we can't loop using self.receive(pile.remove()) because
         that would put the cards on top in reverse order. We need to
-        remove them, then add them in reverse order. Fortunately the
-        builtin reversed() function returns an iterator.
+        remove them into a list in reverse order, then receive them.
 
         In fact this operation is exactly analogous to what you might
         do to move N cards from one pile to another: deal them off the
@@ -380,11 +413,11 @@ class Pile() :
         if isinstance( pile, Pile ) :
             pile_cards = []
             while len( pile ) :
-                pile_cards.append( pile.remove() )
-            for card in reversed( pile_cards ) :
+                pile_cards.insert( 0, pile.remove() )
+            for card in pile_cards :
                 self.receive( card )
         else :
-            raise ValueError
+            raise ValueError("Pile can only receive cards from a Pile object")
 
     def remove( self ) -> Card :
         ''' remove the top Card of the Pile
@@ -398,7 +431,7 @@ class Pile() :
         if len( self._cards ) :
             return self._cards.pop( 0 )
         else :
-            raise PilingError( 'taking card from empty pile')
+            raise PilingError('Cannot take a card from an empty Pile')
 
     def remove_pile( self, cards_to_take: int = 1 ) :
         '''Remove top n cards from this Pile and return them as a new Pile.
@@ -421,12 +454,12 @@ class Pile() :
             new_pile = Pile()
             pile_cards = []
             for j in range( cards_to_take ) :
-                pile_cards.append( self.remove() )
-            for card in reversed( pile_cards ) :
+                pile_cards.insert( 0, self.remove() )
+            for card in pile_cards :
                 new_pile.receive( card )
             return new_pile
         else:
-            raise PilingError( "taking more cards than exist in Pile" )
+            raise PilingError( "Cannot take more cards than exist in a Pile" )
 
 class Hand( Pile ): # an alias
     pass
@@ -451,14 +484,14 @@ class Deck():
     Those that have been dealt are indexed by _access[:_top]. (Slices are nices!)
 
     The Deck is empty when self._top > 51. Dealing from an empty Deck ()
-    raises an exception.
+    raises EmptyDeckError.
 
     Deck supports len() returning the number of cards undealt.
 
     A Deck may be cut(). By default a cut must select and leave at least
     five cards, but this is a parameter.
 
-    A single card that has been dealt from this deck can be returned to the
+    A card that has been dealt from this deck can be returned to the
     deck, where it is put on the bottom. This decrements _top.
 
     All the cards of a Pile can be returned to the Deck from which the Pile
@@ -484,11 +517,11 @@ class Deck():
 
     '''
     __slots__ = ( '_access', '_cards', '_top' )
-    ex_text_1 = 'dealing from empty deck'
+    ex_text_1 = 'Cannot deal from empty deck'
     ex_text_2 = 'shuffling empty deck'
-    ex_text_3 = 'returning card to different deck'
-    ex_text_4 = 'returning card that has not been dealt'
-    ex_text_5 = 'cut takes or leaves fewer than minimum'
+    ex_text_3 = 'Cannot return a card to a different deck'
+    ex_text_4 = 'Cannot return a card that has not been dealt'
+    ex_text_5 = 'Cut takes or leaves fewer than minimum cut'
 
     def __init__( self ) :
 
@@ -522,11 +555,12 @@ class Deck():
         Raises:
             EmptyDeckError
         '''
-        if self._top > 51 :
-            raise EmptyDeckError( Deck.ex_text_1 )
-        C = self._cards[ self._access[ self._top ] ]
-        self._top += 1
-        return C
+        if self._top <= 51 :
+            C = self._cards[ self._access[ self._top ] ]
+            self._top += 1
+            return C
+        raise EmptyDeckError( Deck.ex_text_1 )
+
 
     def shuffle( self, times:int = 1 ) :
         '''
@@ -546,8 +580,8 @@ class Deck():
         if self._top == 51 :
             return # "shuffle" of one-card deck is a no-op
 
-        if self._top :
-            # shuffle remaining cards in partially-dealt deck.
+        if self._top : # is >0, we are
+            # shuffling remaining cards in partially-dealt deck.
             remaining_deck = self._access[ self._top : ]
             for count in range( times ) :
                 random.shuffle( remaining_deck )
@@ -563,7 +597,7 @@ class Deck():
         Cut the deck.
         Args:
             cards_to_take: if None, "about" half the cards are taken,
-                if given, must be greater than minimum_cut and
+                otherwise must be int greater than minimum_cut and
                 less than or equal (self._cards_left - minimum_cut)
 
             minimum_cut: int, fewest cards that can be taken or left
@@ -591,7 +625,9 @@ class Deck():
                 # cut would take or leave less than the minimum
                 raise EmptyDeckError( Deck.ex_text_5 )
 
-        # yeah, this could be done in one statement. bite me.
+        # Take the top chunk of undealt cards and put it underneath the
+        # bottom chunk of undealth cards. Yeah, this could be done in one
+        # statement. bite me.
         already_dealt_cards = self._access[ : self._top ]
         cut_pile = self._access[ self._top : self._top + cards_to_take ]
         left_pile = self._access[ self._top + cards_to_take : ]
@@ -689,6 +725,8 @@ if __name__ == '__main__' :
             #print( ' ', C[ s+x ], end=' ')
         #print()
     #print()
+    for r in range(13):
+        assert Card(r).honor() or r < 9
     assert C[0] < C[1] # deuce less than trey
     assert C[5] < 8 # seven less than Rank(8)
     assert C[0] == C[13] # deuces are equal
@@ -722,6 +760,7 @@ if __name__ == '__main__' :
     D0 = Deck() # new deck
     try :
         D0.cut() # default cut
+        assert len(D0)==52 # number of cards unchanged by cut
     except Exception as e :
         assert False
     for j in range(42) : # deal all but 10 cards
@@ -748,8 +787,8 @@ if __name__ == '__main__' :
     except EmptyDeckError as e :
         assert str(e) == Deck.ex_text_5
 
-    D0 = Deck()
-    D0.cut( cards_to_take = 13 )
+    D0 = Deck() # open a new deck
+    D0.cut( cards_to_take = 13 ) # move 0-12 Clubs to bottom
     C0 = D0.deal()
     assert C0.suit() is DIAMOND
     assert C0.rank() == Rank.r2
@@ -802,36 +841,40 @@ if __name__ == '__main__' :
     west = Pile()
     south = Pile()
     for j in range(13) : # deal a hand of bridge
-        east.receive( D0.deal() )
-        north.receive( D0.deal() )
         west.receive( D0.deal() )
+        north.receive( D0.deal() )
+        east.receive( D0.deal() )
         south.receive( D0.deal() )
     assert south[0] == Card(51)
-    assert east[-1] == Card(0)
-    D0.put_back_pile( east )
-    assert len(east) == 0
+    assert west[-1] == Card(0)
+    D0.put_back_pile( west )
+    assert len(west) == 0
     assert len(D0) == 13
+    D0.put_back_pile( east )
+    D0.put_back_pile( north )
+    D0.put_back_pile( south )
+    assert len(D0) == 52
 
     D1 = Deck()
     C1 = D1.deal()
     P0 = Pile()
     P0.receive(C1)
-    try :
+    try : # stacking same card twice
         P0.receive( C1 )
         assert False
     except PilingError as p :
         pass
-    try :
+    try : # stacking non-Card
         P0.receive( 50 )
         assert False
     except ValueError as v :
         pass
-    try :
+    try : # piling on a non-Pile
         P0.receive_pile( 'what?' )
         assert False
     except ValueError as v :
         pass
-    try :
+    try : # remove more cards than are there
         x = P0.remove_pile( 2 )
         assert False
     except PilingError as p :
@@ -840,7 +883,7 @@ if __name__ == '__main__' :
     D1 = Deck()
     P0 = Pile()
     for j in range(13) :
-        # deal 13 clubs, last is pos. 13
+        # deal 13 clubs, last is pos. 12
         P0.receive( D1.deal() )
     P1 = P0.remove_pile( 6 ) # take off the top 6
     assert 6 == len(P1)
@@ -854,7 +897,8 @@ if __name__ == '__main__' :
     assert 7 == P0[5].position()
     assert 0 == P0[12].position()
 
-    def dump_pile( p:Pile ) :
+    def dump_pile( p:Pile, caption:str = 'a pile' ) :
+        print(caption+': ',end=' ')
         for c in p :
             print( c, end=' ' )
         print()
@@ -863,16 +907,16 @@ if __name__ == '__main__' :
     D2.shuffle( times=5 )
     P2 = Pile()
     for j in range(13) : P2.receive( D2.deal() )
-    #dump_pile(P2)
+    dump_pile(P2, 'raw hand')
     P2.sort()
-    #dump_pile(P2)
-    for j in range(1,13) :
+    dump_pile(P2, 'arranged')
+    for j in range(1,13) : # prove sorted
         assert P2[j].position() > P2[j-1].position()
     P2.sort( reverse=True )
-    #dump_pile(P2)
+    dump_pile(P2, 'reversed')
     for j in range(1,13) :
         assert P2[j].position() < P2[j-1].position()
     P2.turn_over()
-    #dump_pile(P2)
+    dump_pile(P2, 'turned')
     for j in range(1,13) :
         assert P2[j].position() > P2[j-1].position()
