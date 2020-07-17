@@ -271,8 +271,9 @@ class Pile() :
     '''
     The class of a set of 0 or more cards deposited in some order.
 
-    A Pile could represent a "hand" or a discard heap, or be one element
-    of a solitaire tableau.
+    A Pile could represent a "hand" or a discard heap, or be one element of a
+    solitaire tableau. A Pile allows storing a "flag", a single object passed
+    on its instantiation for reference by its creator.
 
     A Pile does **NOT** enforce the rule that its cards should all be from a
     single Deck. Thus you could in principle pile up Cards from different Decks,
@@ -339,10 +340,11 @@ class Pile() :
 
     '''
 
-    __slots__ = ( "_cards" )
+    __slots__ = ( "_cards", "_flag" )
 
-    def __init__( self ) :
+    def __init__( self , flag:object = None) :
         self._cards = [] # Type: List( Card )
+        self._flag = flag
 
     def __len__( self ) -> int :
         return len( self._cards )
@@ -350,6 +352,9 @@ class Pile() :
     def __getitem__( self, key ) :
         ''' implement indexing '''
         return self._cards.__getitem__( key )
+
+    def flag( self ) -> object :
+        return self._flag
 
     def sort( self, reverse:bool = False ) -> int :
         self._cards.sort( key = Card.position, reverse=reverse )
