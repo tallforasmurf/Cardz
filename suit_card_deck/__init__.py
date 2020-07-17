@@ -134,13 +134,14 @@ class Rank(IntEnum):
     Reference as Rank.xx e.g. card.rank() < Rank.rA
     '''
 
+    r1 = 1 # Ace by numeric value
     r2 = 2 ; r3 = 3 ; r4 = 4 ; r5 = 5;
     r6 = 6 ; r7 = 7 ; r8 = 8 ; r9 = 9;
     rT = 10
     rJ = 11
     rQ = 12
     rK = 13
-    rA = 14
+    rA = 14 # Ace by power
 
 class Card():
 
@@ -153,7 +154,8 @@ class Card():
 
     suit_rank() -> int from suit.rank(), the rank of its suit
 
-    rank() -> IntEnum in Rank, one of 2, 3, ... 14
+    rank() -> IntEnum in Rank, one of 2, 3, ... 14 (deuce to high Ace)
+    nrank() -> IntEnum in Rank, one of 1, 2, ... 13 (Ace as 1, to King)
 
     point_count() -> int, 2-9, 10 for face cards, 11 for Ace
 
@@ -193,28 +195,33 @@ class Card():
     Names = ( '2', '3', '4', '5', '6', '7', '8',
               '9', 'T', 'J', 'Q', 'K', 'A' )
 
-    #__slots__ = ['_r', '_p', '_deck' ]
+    #__slots__ = ['_s', '_p', '_deck' ]
 
     def __init__( self, position, deck = None ) :
         assert 0 <= position <= 51
-        self._pos = position
-        self._r, self._p = divmod( position, 13 )
-        self._deck = deck
+        self._pos = position # in the deck as whole
+        # self._s is the number of our suit, 0-3
+        # self._p is our position in the suit, 0..12, deuce..Ace
+        self._s, self._p = divmod( position, 13 )
+        self._deck = deck # from whence we came
 
     def suit( self ) -> Suit :
-        return Card.Suits[ self._r ]
+        return Card.Suits[ self._s ]
 
     def suit_rank( self ) -> int :
-        return Card.Suits[ self._r ].rank()
+        return Card.Suits[ self._s ].rank()
 
     def rank( self ) -> Rank :
-        return Rank( 2+self._p )
+        return Rank( 2+self._p ) # r2..r14, Ace is high
+
+    def nrank( self ) -> Rank : # r1..r13, Ace is 1, King is 13
+        return Rank( (1+self._p if self._p < 12 else 1 ) )
 
     def point_count( self ) -> int :
         return Card.Points[ self._p ]
 
     def honor( self ) -> bool :
-        return self.point_count() > 9
+        return Card.Points[ self._p ] > 9
 
     def honour( self ) -> bool :
         return self.honor()
@@ -719,6 +726,7 @@ if __name__ == '__main__' :
     assert cd.suit_rank() == 0
     assert cd.suit() is CLUB
     assert cd.rank() == Rank.rA
+    assert cd.nrank() == Rank.r1
     assert cd.point_count() == 11
     assert cd.name() == 'A'
     assert cd.position() == 12
