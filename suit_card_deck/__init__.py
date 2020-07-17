@@ -710,9 +710,11 @@ if __name__ == '__main__' :
     assert HEART.color() == DIAMOND.color()
     assert CLUB.name() == 'Club'
     assert HEART.name() == 'Heart'
+    assert DIAMOND.name() == 'Diamond'
     assert SPADE.name() == 'Spade'
     for S in (CLUB,DIAMOND,HEART,SPADE) :
         assert S.plural() == S.name()+'s'
+        assert S.initial() == S.name()[0]
     assert SPADE.rank() == 3
     assert SPADE.rank() > HEART.rank()
     assert HEART.rank() > DIAMOND.rank()
