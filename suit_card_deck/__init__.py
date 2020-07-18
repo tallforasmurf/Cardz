@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: UTF8 -*-
+from __future__ import annotations
 '''
 Module suit_card_deck defines classes for Suit, Card, Deck, and Pile classes.
 
@@ -396,11 +397,8 @@ class Pile() :
         else :
             raise ValueError("Pile can only receive a Card object")
 
-    def receive_pile ( self, pile ) -> int :
+    def receive_pile ( self, pile:Pile ) -> int :
         ''' add a Pile to this Pile.
-
-        Note we can't type-check the argument "pile:Pile" because the
-        name Pile has not been defined yet -- we are inside its def.
 
         Note we can't loop using self.receive(pile.remove()) because
         that would put the cards on top in reverse order. We need to
@@ -445,12 +443,9 @@ class Pile() :
         else :
             raise PilingError('Cannot take a card from an empty Pile')
 
-    def remove_pile( self, cards_to_take: int = 1 ) :
+    def remove_pile( self, cards_to_take: int = 1 ) -> Pile :
         '''Remove top n cards from this Pile and return them as a new Pile.
         As with receive_pile() we have reverse the order of the cards.
-
-        As above, we can't type-note the return "-> Pile" because that
-        class name does not exist yet.
 
         Args:
             cards_to_take: int must be <= len(self._cards)
