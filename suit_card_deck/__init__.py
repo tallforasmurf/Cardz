@@ -215,8 +215,8 @@ class Card():
     def rank( self ) -> Rank :
         return Rank( 2+self._p ) # r2..r14, Ace is high
 
-    def nrank( self ) -> Rank : # r1..r13, Ace is 1, King is 13
-        return Rank( (1+self._p if self._p < 12 else 1 ) )
+    def nrank( self ) -> int : # r1..r13, Ace is 0, King is 13
+        return 1+self._p if self._p < 12 else 0
 
     def point_count( self ) -> int :
         return Card.Points[ self._p ]
