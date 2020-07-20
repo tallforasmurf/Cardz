@@ -366,6 +366,7 @@ def get_command() -> str :
 # FOR DEVELOPMENT SET A FIXED SEED, OTHERWISE NONE
 # seed 319649 is a complete game
 # GAME_SEED = 319649
+GAME_SEED = None
 
 game = Klondike(GAME_SEED)
 while True:
