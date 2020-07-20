@@ -5,10 +5,12 @@ Coded in good style, using type annotations, with lots of unit tests.
 ### Base library: suit_card_deck.py
 
 Implements classes for
+
 * Suit
 * Card
 * Deck
 * Pile (aka Hand)
+
 with appropriate behaviors
 
 ### API Documentation
@@ -29,20 +31,21 @@ An object that represents one of the four suits.
 Four global objects named CLUB, DIAMOND, HEART and SPADE are instantiated and can be
 used for comparisons, as in `card.suit() is CLUB` or `card.suit() < SPADE`
 
-Properties of a suit are usually accessed via a card, unicode `card.suit()`.
+Properties of a suit are usually accessed via a card, via `card.suit()`.
 
-`card.suit().color()` returns a string `black` or `red`.
+`card.suit().color()` returns a string `black` or `red`. (Also `card.color()` for convenience.)
 
 `card.suit().name()` returns a string, one of 'Club', 'Diamond', 'Heart', 'Spade'
 This is also the `str()` form of a suit.
 
-`card.suit().plural()` returns the `name()` with `s`, for example `DIAMONDS`
+`card.suit().plural()` returns the `name()` with `s`, for example `Diamonds`
 
 `card.suit().initial()` returns a string, one of 'C', 'D', 'H', 'S'.
 
 `card.suit().rank()` (also `card.suit_rank()`) returns an int, 0 1 2 or 3.
 
-`card.suit().symbol()` returns a one-character unicode string ♠ ♣ ♥ ♦ (&spades;&clubs;&hearts;&diams;).
+`card.suit().symbol()` returns a one-character unicode string ♠ ♣ ♥ ♦
+(in HTML, &amp;spades;&amp;clubs;&amp;hearts;&amp;diams;).
 These characters are available as a four-character string as `Suit.symbols`.
 
 ## Card
