@@ -80,13 +80,13 @@ class Suit():
 
     rank() -> integer, 0 (Club) to 3 (Spade)
 
-    image() -> one-character unicode string ♠ ♣ ♥ ♦ (&spades;&clubs;&hearts;&diams;)
+    symbol() -> one-character unicode string ♠ ♣ ♥ ♦ (&spades;&clubs;&hearts;&diams;)
 
     '''
 
     colors = ( 'black', 'red', 'red', 'black' )
     names = ( 'Club', 'Diamond', 'Heart', 'Spade' )
-    images = '♣♦♥♠'
+    symbols = '♣♦♥♠'
 
     __slots__ = '_r'
 
@@ -109,8 +109,8 @@ class Suit():
     def rank( self ) -> int :
         return self._r
 
-    def image( self ) -> str :
-        return Suit.images[ self._r ]
+    def symbol( self ) -> str :
+        return Suit.symbols[ self._r ]
 
     def __repr__( self ) -> str :
         return 'Suit({})'.format( self._r )
@@ -209,8 +209,14 @@ class Card():
     def suit( self ) -> Suit :
         return Card.Suits[ self._s ]
 
+    def color( self ) -> str : # convenience method
+        return self.suit().color()
+
     def suit_rank( self ) -> int :
         return Card.Suits[ self._s ].rank()
+
+    def position( self ) -> int :
+        return self._pos
 
     def rank( self ) -> Rank :
         return Rank( 2+self._p ) # r2..r14, Ace is high
@@ -230,14 +236,11 @@ class Card():
     def name( self ) -> str :
         return Card.Names[ self._p ]
 
-    def position( self ) -> int :
-        return self._pos
-
     def __repr__( self ) -> str :
         return 'Card( {} )'.format( self._pos )
 
     def __str__( self ) -> str :
-        return '{}{}'.format( self.suit().image(), self.name() )
+        return '{}{}'.format( self.suit().symbol(), self.name() )
 
     def __lt__( self, other ) -> bool :
         if isinstance( other, Card ) :
@@ -568,6 +571,17 @@ class Deck():
             return C
         raise EmptyDeckError( Deck.ex_text_1 )
 
+    def deal_to_pile( self, count:int, pile:Pile ) -> int :
+        if count > self._cards_left() :
+            raise EmptyDeckError(f'{count} cards requested when deck contains {self._cards_left()}')
+        for _ in range ( max(0,count) ): # protect against negative count
+            pile.receive(self.deal())
+        return len(pile)
+
+    def deal_pile( self, count:int ) -> Pile :
+        pile = Pile()
+        self.deal_to_pile(count,pile)
+        return pile
 
     def shuffle( self, times:int = 1 ) :
         '''
@@ -596,7 +610,7 @@ class Deck():
         else :
             # _top is 0, no cards dealt, save a little time
             # by not doing the slice operations.
-            for count in range( times ) :
+            for count in range( max(0,times) ) : # guard against negative
                 random.shuffle( self._access ) # shuffle whole deck
 
     def cut( self, cards_to_take:int = None, minimum_cut:int = 5 ) :
@@ -714,8 +728,8 @@ if __name__ == '__main__' :
     assert SPADE.rank() > HEART.rank()
     assert HEART.rank() > DIAMOND.rank()
     assert DIAMOND.rank() > CLUB.rank()
-    assert DIAMOND.image() == '♦'
-    assert SPADE.image() == '♠'
+    assert DIAMOND.symbol() == '♦'
+    assert SPADE.symbol() == '♠'
     '''
     Testing Card Bugs 1 2 3
     '''
@@ -723,7 +737,7 @@ if __name__ == '__main__' :
     assert cd.suit_rank() == 0
     assert cd.suit() is CLUB
     assert cd.rank() == Rank.rA
-    assert cd.nrank() == Rank.r1
+    assert cd.nrank() == 0
     assert cd.point_count() == 11
     assert cd.name() == 'A'
     assert cd.position() == 12
@@ -864,6 +878,24 @@ if __name__ == '__main__' :
     D0.put_back_pile( north )
     D0.put_back_pile( south )
     assert len(D0) == 52
+
+    D0 = Deck() # deal bridge another way
+    west = D0.deal_pile(13)
+    assert west[0] == Card(12)
+    north = D0.deal_pile(13)
+    # east, south exist and are empty from above
+    assert 13 == (D0.deal_to_pile(13,east))
+    try:
+        D0.deal_to_pile(14,south)
+        assert False
+    except EmptyDeckError:
+        pass
+    D0.deal_to_pile(13,south) # should work
+    try:
+        D0.deal_to_pile(1,south)
+        assert False
+    except EmptyDeckError:
+        pass
 
     D1 = Deck()
     C1 = D1.deal()
