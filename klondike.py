@@ -92,7 +92,20 @@ class Klondike():
         self.faceup_count = [1] * 7 # turn over the top card of each tableau pile
 
     def game_over( self ) -> bool :
-        return 52 == sum( [ len(x) for x in self.aces ] )
+        '''
+
+        Game is over when all cards have been played to the foundations or
+        are face-up in the tableaux, and maybe one unplayed in the pack.
+
+        I think it is possible to have a situation where there are 2 or 3
+        cards still in the pack and you can't finish the game, although that
+        seems pretty unlikely. Anyway, you don't have to play all 52 cards to
+        the foundations to get the game over with. Just play all but the last
+        pack card into the tableaux.
+        '''
+        foundation_cards = sum( [ len(x) for x in self.aces ] )
+        tableau_face_up = sum( self.faceup_count )
+        return 51 <= foundation_cards + tableau_face_up
 
     '''
     Turn the deck, that is, deal the top 3 cards onto the pack, so one can be
@@ -334,7 +347,7 @@ def get_command() -> str :
     while True :
         try:
             input_text = input( "source, target: " )
-            if input_text.lower() == "q" : raise EOFError
+            if input_text.lower() == "q" : return 'ZZ'
         except EOFError as e :
             print() # force a newline on ^D
             return 'XX'
@@ -375,6 +388,11 @@ while True:
     if command == 'XX' :
         # user hit ^C
         break
+    if command == 'ZZ' :
+        # user entered q
+        if ask_another() :
+            game = Klondike(GAME_SEED)
+        else : break
     elif command == 'NN' :
         game.turn_the_deck()
     else :
